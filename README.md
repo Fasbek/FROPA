@@ -1,15 +1,15 @@
-# FROPA: Fluorescence Radiative and Optical Parameter Analyzer (v1.1)
+# FROPA: Fluorescence Radiative and Optical Parameter Analyzer (v1.1.0)
 
 FROPA is an open-source software tool, written in Python with a graphical user interface (GUI). It is designed to facilitate the calculation of Judd-Ofelt intensity parameters (Ωλ) and subsequent optical and radiative properties for rare-earth ions (currently Er³⁺) in glass matrices and other materials.
 
 ## Key Features
 
-* **JO Parameter Calculation:** Performs a least-squares fit to determine Ωλ parameters from experimental oscillator strengths.  
-* **Flexible Radiative Property Calculation:** Computes transition probabilities (A), branching ratios (β), and radiative lifetimes (τ) for *user-selected* emission transitions.  
-* **Flexible Cross-Section Calculation:** Estimates the stimulated emission cross-section (σₑ) for *user-defined* emission bands.  
-* **Configurable Data Sources:** Allows using internal emission matrix elements (based on literature data, e.g., Kaminskii et al. \[cite: 1\]) or loading a custom user file.  
-* **Configurable Sellmeier Model:** Supports the two common models (n² \= 1 \+ ... and n² \= A \+ ...) and automatically validates the coefficient file structure.  
-* **Intuitive GUI & Export:** Simplifies file loading, calculation setup, and allows saving the full analysis report to a .txt file via a separate results window.
+- **JO Parameter Calculation:** Performs a least-squares fit to determine Ωλ parameters from experimental oscillator strengths.  
+- **Flexible Radiative Property Calculation:** Computes transition probabilities (A), branching ratios (β), and radiative lifetimes (τ) for *user-selected* emission transitions.  
+- **Flexible Cross-Section Calculation:** Estimates the stimulated emission cross-section (σₑ) for *user-defined* emission bands.  
+- **Configurable Data Sources:** Allows using internal emission matrix elements (based on literature data, e.g., Kaminskii et al. \[cite: 1\]) or loading a custom user file.  
+- **Configurable Sellmeier Model:** Supports the two common models (n² \= 1 \+ ... and n² \= A \+ ...) and automatically validates the coefficient file structure.  
+- **Intuitive GUI & Export:** Simplifies file loading, calculation setup, and allows saving the full analysis report to a .txt file via a separate results window.
 
 ## **Installation and Usage**
 
@@ -50,10 +50,12 @@ The application requires specific formats for the input .txt files.
 If you use FROPA in your research, **please cite BOTH**: the primary article describing the methodology and the DOI for this software.
 
 1. **Primary Article:**  
-   * \[Your Name\], et al. "Title of Your Article". *Journal Name*, Volume, Pages (Year). DOI: **\[Your Article's DOI\]** *(← Replace this when published)*  
-2. **This Software (FROPA v1.1):**  
-   * \[Your Name\]. *FROPA: Fluorescence Radiative and Optical Parameter Analyzer* (v1.1) \[Software\]. Zenodo (Year). DOI: **\[Your Zenodo DOI here\]** *(← Replace this after Step 3 of publication)*
+   *Flavio S. Angulo Sumarriva*, et al. "Title (to be updated after publication)". *Journal Name*, Volume, Pages (Year).  
+   DOI: **[to be updated after publication]**
 
+2. **Software (FROPA v1.1):**  
+   *Flavio S. Angulo Sumarriva*. *FROPA: Fluorescence Radiative and Optical Parameter Analyzer* (v1.1) [Software].  
+   Zenodo (2025). DOI: [https://doi.org/10.5281/zenodo.17437585](https://doi.org/10.5281/zenodo.17437585)
 ## **License**
 
 This project is distributed under the MIT License. See the LICENSE file for details.

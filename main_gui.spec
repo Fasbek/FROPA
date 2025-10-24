@@ -5,7 +5,7 @@ a = Analysis(
     ['main_gui.py'],
     pathex=['./src'],
     binaries=[],
-    datas=[('icon.ico', '.')],
+    datas=[('icon.ico', '.'), ('data_original/EmMatrixElements_Er.txt', 'data_original')],
     hiddenimports=['pandas'],
     hookspath=[],
     hooksconfig={},

@@ -1,0 +1,35 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as described below."
+title: "FROPA: Fluorescence Radiative and Optical Parameter Analyzer"
+version: "v1.1.0"
+doi: https://doi.org/10.5281/zenodo.17437585
+date-released: 2025-10-24
+authors:
+  - family-names: Angulo Sumarriva
+    given-names: Flavio Sergio
+    affiliation: "Universidad Nacional Federico Villarreal"
+    orcid: "https://orcid.org/0009-0006-9628-4782"
+license: MIT
+repository-code: "https://github.com/Fasbek/FROPA"
+repository-artifact: "https://zenodo.org/records/17437585"
+abstract: >
+  FROPA (Fluorescence Radiative and Optical Parameter Analyzer) is an open-source
+  tool developed to calculate Judd–Ofelt intensity parameters (Ωλ) and related
+  optical and radiative properties of Er³⁺-doped glass systems. It provides a
+  GUI-based environment for performing least-squares fitting, emission cross-section
+  estimation, and lifetime analysis.
+keywords:
+  - Judd-Ofelt
+  - rare-earth ions
+  - optical spectroscopy
+  - emission cross-section
+  - FROPA
+references:
+  - type: article
+    title: "to be updated after publication"
+    authors:
+      - family-names: Angulo Sumarriva
+        given-names: Flavio Sergio
+    journal: "to be updated after publication"
+    year: 2025
+    doi: "to be updated after publication"
