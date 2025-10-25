@@ -43,7 +43,7 @@ There are two ways to use FROPA:
 
 The application requires specific formats for the input .txt files.
 
-**\- Please consult the detailed format guide here: [FILE\_FORMATS.md](https://www.google.com/search?q=FILE_FORMATS.md)**
+**\- Please consult the detailed format guide here: [FILE_FORMATS.md](FILE_FORMATS.md)**
 
 ## **How to Cite**
 
@@ -55,7 +55,7 @@ If you use FROPA in your research, **please cite BOTH**: the primary article des
 
 2. **Software (FROPA v1.1):**  
    *Flavio S. Angulo Sumarriva*. *FROPA: Fluorescence Radiative and Optical Parameter Analyzer* (v1.1) [Software].  
-   Zenodo (2025). DOI: [https://doi.org/10.5281/zenodo.17437585](https://doi.org/10.5281/zenodo.17437585)
+   Zenodo (2025). DOI: [10.5281/zenodo.17437584](https://doi.org/10.5281/zenodo.17437584)
 ## **License**
 
 This project is distributed under the MIT License. See the LICENSE file for details.

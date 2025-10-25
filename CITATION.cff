@@ -2,7 +2,7 @@ cff-version: 1.2.0
 message: "If you use this software, please cite it as described below."
 title: "FROPA: Fluorescence Radiative and Optical Parameter Analyzer"
 version: "v1.1.0"
-doi: https://doi.org/10.5281/zenodo.17437585
+doi: 10.5281/zenodo.17437585
 date-released: 2025-10-24
 authors:
   - family-names: Angulo Sumarriva
