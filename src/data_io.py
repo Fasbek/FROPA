@@ -1,17 +1,38 @@
 import pandas as pd
 from .utils import SELLMEIER_MODEL_1 # Importamos la constante
 
+# def load_oscillator_data(filepath):
+#     try:
+#         osc_data = pd.read_csv(filepath, sep=r'\s+')
+#         wavelengths_nm = osc_data.iloc[:, 0].values
+#         sample_names = osc_data.columns[1:].tolist()
+#         f_exp_all_samples = osc_data.iloc[:, 1:].values
+#         if f_exp_all_samples.ndim == 1:
+#             f_exp_all_samples = f_exp_all_samples.reshape(-1, 1)
+#         return wavelengths_nm, f_exp_all_samples, sample_names
+#     except Exception as e:
+#         raise ValueError(f"Error cargando archivo de oscilador: {e}")
+
 def load_oscillator_data(filepath):
     try:
-        osc_data = pd.read_csv(filepath, sep=r'\s+')
-        wavelengths_nm = osc_data.iloc[:, 0].values
-        sample_names = osc_data.columns[1:].tolist()
-        f_exp_all_samples = osc_data.iloc[:, 1:].values
+        df = pd.read_csv(filepath, sep=r'\s+')
+        
+        # 1. Extraemos los nombres de las transiciones (Columna 0)
+        band_labels = df.iloc[:, 0].astype(str).tolist()
+        
+        # 2. Extraemos las longitudes de onda (Columna 1)
+        wavelengths_nm = pd.to_numeric(df.iloc[:, 1], errors='coerce').values
+        
+        # 3. Las muestras ahora empiezan desde la columna 2 en adelante
+        sample_names = df.columns[2:].tolist()
+        f_exp_all_samples = df.iloc[:, 2:].values
+        
         if f_exp_all_samples.ndim == 1:
             f_exp_all_samples = f_exp_all_samples.reshape(-1, 1)
-        return wavelengths_nm, f_exp_all_samples, sample_names
+            
+        return wavelengths_nm, f_exp_all_samples, sample_names, band_labels
     except Exception as e:
-        raise ValueError(f"Error cargando archivo de oscilador: {e}")
+        raise ValueError(f"Error en formato de oscilador: {e}")
 
 def load_abs_matrix_elements(filepath):
     try:
@@ -31,11 +52,21 @@ def load_emission_matrix_elements(filepath):
     except Exception as e:
         raise ValueError(f"Error cargando matriz de emisión: {e}")
 
+# def get_available_transitions(em_matrix_df):
+#     from .utils import PRETTY_NAMES
+#     if em_matrix_df is None: return {}
+#     unique_slugs = em_matrix_df['Initial_Name_Slug'].unique()
+#     transitions = {slug: PRETTY_NAMES.get(slug, slug) for slug in unique_slugs}
+#     return dict(sorted(transitions.items(), key=lambda item: item[1]))
+
 def get_available_transitions(em_matrix_df):
     from .utils import PRETTY_NAMES
     if em_matrix_df is None: return {}
+    # Obtener todos los niveles iniciales sin filtrar por listas blancas
     unique_slugs = em_matrix_df['Initial_Name_Slug'].unique()
+    # Mapear a nombres bonitos
     transitions = {slug: PRETTY_NAMES.get(slug, slug) for slug in unique_slugs}
+    # Ordenar alfabéticamente para que la UI sea consistente
     return dict(sorted(transitions.items(), key=lambda item: item[1]))
 
 def load_sellmeier_coeffs(filepath, model_type):

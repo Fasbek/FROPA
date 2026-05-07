@@ -6,17 +6,18 @@ The FROPA application requires several text files (.txt) as input. It is crucial
 
 Maps absorption bands (identified by peak wavelength in nm) to their experimental oscillator strengths (dimensionless) for one or more samples.
 
-* **First line:** Header row with column names.  
-* **First column:** Contains the peak absorption wavelengths in nm. The column name can be Band or similar; it will be interpreted as the wavelength column.  
-* **Subsequent columns:** Each additional column represents a different sample. The header name (e.g., Glass\_Sample\_A) will be used as the unique sample identifier.
+* **First line:** Header row with column names.
+* **First column:** Contains the name of the transition (e.g., 4I11/2, 4F9/2). These labels are used for reporting.
+* **Second column:** Contains the peak absorption wavelengths in nm. Used for refractive index and Lorentz local field calculations.
+* **Subsequent columns:** Each additional column represents a different sample. The header name (e.g., Glass\_A) will be used as the unique sample identifier.
 
 **Example (for 2 samples):**
 
 \# Experimental Oscillator Strength Data for XYZ Glasses  
-Band    Glass\_A     Glass\_B  
-976.96  2.641E-6    2.286E-6  
-797.93  1.347E-6    1.213E-6  
-652.97  1.023E-5    8.710E-6  
+Transition    Band    Glass\_A     Glass\_B  
+4I11/2    976.96  2.641E-6    2.286E-6  
+4I9/2    797.93  1.347E-6    1.213E-6  
+4F9/2    652.97  1.023E-5    8.710E-6  
 \# ... (more rows, one for each observed band)
 
 **2\. Absorption Matrix Elements File (AbsMatrixElements\_\*.txt)**
@@ -36,6 +37,9 @@ Contains the theoretical reduced matrix elements ($U^2, U^4, U^6$, dimensionless
 0       0.1733  0.0099  
 0       0.5354  0.4618  
 \# ... (more rows)
+
+*   **Scientific Reference:** The theoretical reduced matrix elements ($U^k$) for Erbium (Er³⁺) and other rare-earth ions can be found in the classic works of **W. T. Carnall et al.**. 
+    *   For the Er³⁺ aquo-ion values often used in glass analysis, refer to: *Carnall W, Fields P, Rajnak K. Electronic energy levels in the trivalent lanthanide aquo ions. I. Pr3+, Nd3+, Pm3+, Sm3+, Dy3+, Ho3+, Er3+, and Tm3+. J Chem Phys 1968;49:4424–42. https://doi.org/10.1063/1.1669893.*
 
 **3\. Sellmeier Coefficients File (Sellmeier\_\*.txt)**
 
@@ -66,13 +70,15 @@ MyGlassY    1.95        1.1         11000.0
 
 **4\. Folder Containing Emission Spectra**
 
+Unlike absorption data, emission spectra are **selected individually** for each sample through the GUI.
 This is **not a single file**, but a **folder** containing multiple .txt files, one for each emission spectrum you wish to analyze for cross-sections.
 
-* Inside the selected folder, there must be **one .txt file per sample** listed in the Oscillator Strength file that you want to analyze.  
+* In Section 5, you must manually select the specific .txt file corresponding to each sample identifier listed in your Oscillator Strength file.  
 * The **filename** must exactly match the sample identifier, prefixed with emision\_ (e.g., emision\_Glass\_A.txt). The TZGE→TZGNE mapping logic also applies here.  
 * Each spectrum .txt file must contain **two numerical columns**, separated by spaces or tabs, with no header:  
   1. Wavelength in nm.  
   2. Emission Intensity (arbitrary units; will be normalized internally).
+* Files should ideally not have headers, but if they do, ensure they start with # to be ignored
 
 **Example (content of emision\_Glass\_A.txt):**
 
@@ -109,3 +115,12 @@ This file is only needed if you select "Load custom file" as the Emission Data S
 4.5 6 1.5 5.5 6 1.5 2150       0.003   0.0674  0.1271  \# 4I9/2 \-\> 4I11/2  
 6.5 6 1.5 7.5 6 1.5 6500       0.0160  0.1180  1.4580  \# 4I13/2 \-\> 4I15/2  
 \# ... (more rows for all relevant J-\>J' transitions)  
+
+## 📝 Templates and Examples
+
+If you are unsure about the formatting, please refer to the example files provided in the `data_original/` directory:
+- **Oscillator_*.txt:** See `Oscillator.txt` for a multi-sample header structure.
+- **AbsMatrixElements_*.txt:** See `AbsMatrixElements_C1968.txt` for the 3-column matrix format.
+- **Sellmeier_*.txt:** See `Sellmeier.txt` for the 4-coefficient model structure.
+
+These files use dummy data but maintain the strict structural requirements of FROPA.

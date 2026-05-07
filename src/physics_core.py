@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 import os
+from .constants import H, C, M, PI, J_GROUND_ER
 
 def _calculate_A_rad_specific(initial_slug, final_slug, omegas, coeffs, em_df, sm):
     """
@@ -54,10 +55,24 @@ def calculate_S_ed_exp(wavelengths, f_exp, n_values):
     with np.errstate(divide='ignore', invalid='ignore'): S_ed = num/den
     return np.nan_to_num(S_ed)
 
-def perform_jo_fit(S_ed_exp, abs_matrix_elements):
+# def perform_jo_fit(S_ed_exp, abs_matrix_elements):
+#     omegas, _, _, _ = np.linalg.lstsq(abs_matrix_elements, S_ed_exp, rcond=None)
+#     rms = np.sqrt(np.sum((S_ed_exp - np.dot(abs_matrix_elements, omegas))**2) / (len(S_ed_exp) - 3))
+#     return omegas, rms
+
+def perform_jo_fit(S_ed_exp, abs_matrix_elements, wavelengths_nm, n_values):
     omegas, _, _, _ = np.linalg.lstsq(abs_matrix_elements, S_ed_exp, rcond=None)
-    rms = np.sqrt(np.sum((S_ed_exp - np.dot(abs_matrix_elements, omegas))**2) / (len(S_ed_exp) - 3))
-    return omegas, rms
+    S_ed_calc = np.dot(abs_matrix_elements, omegas)
+    
+    wl_cm = wavelengths_nm * 1e-7
+    num_f = 8 * PI**2 * M * C * (n_values**2 + 2)**2
+    den_f = 3 * H * wl_cm * (2 * J_GROUND_ER + 1) * 9 * n_values
+    f_cal = S_ed_calc * (num_f / den_f)
+    
+    # Calculamos ambos RMS aquí
+    rms_S = np.sqrt(np.sum((S_ed_exp - S_ed_calc)**2) / (len(S_ed_exp) - 3))
+    
+    return omegas, rms_S, f_cal
 
 # def SMD(J1, L1, S1, J2, L2, S2, ν):
 #     from .constants import H, C, E, PI
@@ -134,7 +149,10 @@ def calculate_radiative_properties(omegas, coeffs, em_df, sm, sel_levels):
 def calculate_emission_cross_section(em_spectrum_df, band_info, A_rad, coeffs, sm):
     from .constants import C, PI
     band = em_spectrum_df[(em_spectrum_df['wavelength_nm']>=band_info['range_min'])&(em_spectrum_df['wavelength_nm']<=band_info['range_max'])].copy()
-    if band.empty or len(band)<2: return None
+    if band.empty or len(band)<2:
+        print(f"DEBUG: Rango {band_info['range_min']}-{band_info['range_max']} nm fuera del rango del espectro de emisión.")
+        return None
+    
     band['n'] = calculate_refractive_index(band['wavelength_nm'], coeffs, sm)
     band['lambda_cm'] = band['wavelength_nm']*1e-7
     den_int = np.trapz(band['lambda_cm']*band['intensity']*(band['n']**2), x=band['lambda_cm'])
@@ -148,49 +166,80 @@ def calculate_emission_cross_section(em_spectrum_df, band_info, A_rad, coeffs, s
     d_lam = int_I_nm/max_I if max_I>0 else 0; d_G = sigma*(d_lam*1e-7)
     return {'Level': f"{band_info['initial']} → {band_info['final']}", 'E_exp (cm⁻¹)':E_exp, 'Δλ_eff (nm)':d_lam, 'σₑ (x10⁻²¹ cm²)':sigma*1e21, 'ΔG (x10⁻²⁸ cm³)':d_G*1e28}
 
-def run_full_analysis(p_osc, p_abs, p_sell, p_em_dir, sm,
+def run_full_analysis(p_osc, p_abs, p_sell, emission_dict, sm,
                       do_rad_calc, p_em, sel_trans_rad,
-                      do_cs_calc, user_bands):
+                      do_cs_calc, user_bands, lambda_ex):
     from . import data_io
-    wl, f_exp, s_names = data_io.load_oscillator_data(p_osc)
+    from .utils import PRETTY_NAMES
+    wl, f_exp, s_names, band_labels = data_io.load_oscillator_data(p_osc)
     abs_mx = data_io.load_abs_matrix_elements(p_abs)
     sell_co = data_io.load_sellmeier_coeffs(p_sell, sm)
-    if wl is None or abs_mx is None or sell_co is None: raise ValueError("Error cargando archivos principales.")
+    
+    if wl is None or abs_mx is None or sell_co is None: 
+        raise ValueError("Error cargando archivos principales.")
+        
     jo_res, rad_sum, cs_res = [], {}, []
     em_mx = data_io.load_emission_matrix_elements(p_em) if (do_rad_calc or do_cs_calc) and p_em and os.path.exists(p_em) else None
+
+    abs_trans_names = [
+        '⁴I₁₅/₂ → ⁴I₁₁/₂', '⁴I₁₅/₂ → ⁴I₉/₂', '⁴I₁₅/₂ → ⁴F₉/₂', 
+        '⁴I₁₅/₂ → ⁴S₃/₂', '⁴I₁₅/₂ → ²H₁₁/₂', '⁴I₁₅/₂ → ⁴F₇/₂', 
+        '⁴I₁₅/₂ → ⁴F₅/₂', '⁴I₁₅/₂ → ⁴F₃/₂', '⁴I₁₅/₂ → ²H₉/₂',
+        '⁴I₁₅/₂ → ⁴G₁₁/₂', '⁴I₁₅/₂ → ²G₇/₂' 
+    ]
 
     for i, s_name in enumerate(s_names):
         coeffs = sell_co.get(s_name.replace('TZGE','TZGNE'), sell_co.get(s_name))
         if coeffs is None: continue
+        
         n_vals = calculate_refractive_index(wl, coeffs, sm)
-        omegas, rms = perform_jo_fit(calculate_S_ed_exp(wl, f_exp[:, i], n_vals), abs_mx)
-        jo_res.append({"Sample":s_name, "Ω2 (x10⁻²⁰)":omegas[0]*1e20, "Ω4 (x10⁻²⁰)":omegas[1]*1e20, "Ω6 (x10⁻²⁰)":omegas[2]*1e20, "Ω4/Ω6":omegas[1]/omegas[2], "δ_rms (x10⁻²⁰)":rms*1e20})
+        s_ed_exp_val = calculate_S_ed_exp(wl, f_exp[:, i], n_vals)
+        omegas, rms_S_val, f_cal_sample = perform_jo_fit(s_ed_exp_val, abs_mx, wl, n_vals)
+        
+        diff_f = f_exp[:, i] - f_cal_sample
+        rms_f_val = np.sqrt(np.sum(diff_f**2) / (len(wl) - 3))
+        f_rms_total = np.sqrt(np.sum(f_exp[:, i]**2) / len(wl))
+        delta_rms_perc = (rms_f_val / f_rms_total) * 100
 
+        jo_res.append({
+            "Sample": s_name, 
+            "Ω2": omegas[0]*1e20, "Ω4": omegas[1]*1e20, "Ω6": omegas[2]*1e20,
+            "rms_S": rms_S_val*1e20, "rms_f": rms_f_val*1e6, "rms_perc": delta_rms_perc,
+            "f_table": pd.DataFrame({
+                # Columna 1: Nombre bonito de la transición
+                "Transición": [PRETTY_NAMES.get(b, b) for b in band_labels],
+                # Columna 2: Longitud de onda experimental
+                "λ (nm)": wl.astype(float).round(2),
+                "f_exp (x10⁻⁶)": f_exp[:, i]*1e6,
+                "f_cal (x10⁻⁶)": f_cal_sample*1e6
+            })
+        })
+        
         if do_rad_calc and em_mx is not None:
             rad_sum[s_name] = calculate_radiative_properties(omegas, coeffs, em_mx, sm, sel_trans_rad)
-        else:
-            rad_sum[s_name] = pd.DataFrame()
 
+        # --- Lógica de Sección Eficaz con Diccionario ---
         if do_cs_calc and em_mx is not None and user_bands:
-            em_f = os.path.join(p_em_dir, f'emision_{s_name.replace("TZGE","TZGNE",1)}.txt')
-            if not os.path.exists(em_f): em_f = os.path.join(p_em_dir, f'emision_{s_name}.txt')
-            if not os.path.exists(em_f): continue
-            em_spectrum_df = data_io.load_emission_spectrum(em_f)
-            if em_spectrum_df is None: continue
+            # Buscamos la ruta en el diccionario usando la etiqueta de la muestra
+            em_f = emission_dict.get(s_name)
+            
+            if em_f and os.path.exists(em_f):
+                em_spectrum_df = data_io.load_emission_spectrum(em_f)
+                if em_spectrum_df is not None:
+                    for band in user_bands:
+                        A_rad_specific = 0
+                        rad_props_df = rad_sum.get(s_name, pd.DataFrame())
+                        if not rad_props_df.empty:
+                            trans_data = rad_props_df[(rad_props_df['SLJ'] == band['initial_slug']) & (rad_props_df["S'L'J'"] == band['final_slug'])]
+                            if not trans_data.empty:
+                                A_rad_specific = trans_data['A'].iloc[0]
+                        
+                        if A_rad_specific == 0:
+                            A_rad_specific = _calculate_A_rad_specific(band['initial_slug'], band['final_slug'], omegas, coeffs, em_mx, sm)
 
-            for band in user_bands:
-                A_rad_specific = 0
-                rad_props_df = rad_sum.get(s_name, pd.DataFrame())
-                if not rad_props_df.empty:
-                    trans_data = rad_props_df[(rad_props_df['SLJ'] == band['initial_slug']) & (rad_props_df["S'L'J'"] == band['final_slug'])]
-                    if not trans_data.empty:
-                        A_rad_specific = trans_data['A'].iloc[0]
-                
-                if A_rad_specific == 0:
-                    A_rad_specific = _calculate_A_rad_specific(band['initial_slug'], band['final_slug'], omegas, coeffs, em_mx, sm)
-
-                if A_rad_specific > 0:
-                    analysis = calculate_emission_cross_section(em_spectrum_df, band, A_rad_specific, coeffs, sm)
-                    if analysis:
-                        analysis.update({'Glass':s_name, 'λ_ex (nm)':980}); cs_res.append(analysis)
+                        if A_rad_specific > 0:
+                            analysis = calculate_emission_cross_section(em_spectrum_df, band, A_rad_specific, coeffs, sm)
+                            if analysis:
+                                analysis.update({'Glass':s_name, 'λ_ex (nm)': lambda_ex})
+                                cs_res.append(analysis)
     return jo_res, rad_sum, cs_res

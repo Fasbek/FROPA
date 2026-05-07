@@ -1,0 +1,11 @@
+Transición	λ (nm)	f_exp (x10⁻⁶)	f_cal (x10⁻⁶)
+⁴I₉/₂	790.9300	0.5725	0.4215
+⁴F₉/₂	651.9500	2.4575	2.5381
+⁴S₃/₂	540.9000	0.7511	0.6249
+²H₁₁/₂	520.9200	43.8140	43.8140
+⁴F₇/₂	485.1100	2.7457	2.6281
+⁴F₅/₂	450.9900	0.5446	0.8266
+
+# Indicadores de Calidad para SAMPLEA:
+rms_f_Oscillator_Strength (x10-6):	0.2150
+RMS_Error_Total (%):	1.20

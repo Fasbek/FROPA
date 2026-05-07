@@ -1,0 +1,11 @@
+Transición	λ (nm)	f_exp (x10⁻⁶)	f_cal (x10⁻⁶)
+⁴I₉/₂	790.9300	0.5488	0.3937
+⁴F₉/₂	651.9500	2.5468	2.6671
+⁴S₃/₂	540.9000	0.7354	0.7753
+²H₁₁/₂	520.9200	14.5780	14.5780
+⁴F₇/₂	485.1100	3.4874	3.1624
+⁴F₅/₂	450.9900	0.4841	1.0719
+
+# Indicadores de Calidad para SAMPLEB:
+rms_f_Oscillator_Strength (x10-6):	0.4047
+RMS_Error_Total (%):	6.50
